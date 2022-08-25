@@ -1,0 +1,117 @@
+#:kivy 2.1.0
+
+App:
+<App>:
+ 
+<Header>:
+    orientation: "vertical"
+    canvas.before:
+        Color:
+            rgb: 1, 1, 1
+        Rectangle:
+            source: "plane_image.jpg"
+            pos: self.pos
+            size: self.size 
+    Label:
+        text: "KivyFly"
+        color: 0, 0, 0
+        font_size: self.height
+    Label:
+        text: "Add flights to your wishlist we will track their price for you"
+        color: 0, 0, 0
+        font_size: self.height / 6
+        bold: True
+
+<Panel>:
+    padding: "10dp"
+    spacing: "10dp"
+    canvas.before:
+        Color:
+            rgb: 0.1, 0.35, 0.65
+        Rectangle:
+            pos: self.pos
+            size: self.size 
+    orientation: "vertical"
+    BoxLayout:
+        orientation: "horizontal"
+        spacing: "5dp"
+        Button:
+            size_hint: 0.7, 1
+            text: "My location"
+        TextInput:
+            id: from_widget
+            focus: True
+            write_tab: False
+            multiline: False
+            padding_y: self.height / 2 - (self.line_height / 2), 0
+            hint_text: "Departure city"
+    BoxLayout:
+        orientation: "horizontal"
+        spacing: "5dp"
+        Button:
+            size_hint: 0.7, 1
+            text: "Random location"
+        TextInput:
+            id: to_widget
+            write_tab: False
+            multiline: False
+            padding_y: self.height / 2 - (self.line_height / 2), 0
+            hint_text: "Destination city"
+    BoxLayout:
+        orientation: "horizontal"
+        spacing: "5dp"
+        TextInput:
+            id: days
+            write_tab: False
+            multiline: False
+            padding_y: self.height / 2 - (self.line_height / 2), 0
+            halign: 'center'
+            input_filter: "int"
+            hint_text: "Duration of stay (in days)"
+        TextInput:
+            id: price
+            write_tab: False
+            multiline: True
+            padding_y: self.height / 2 - (self.line_height / 2) * 2, 0
+            halign: 'center'
+            input_filter: "int"
+            hint_text: "price above the minimum price (in %)"
+    ToggleButton:
+        size_hint: 1, 0.6
+        on_state: root.unlock(self, email)
+        text: "I want to be updated via email"
+    TextInput:
+        id: email
+        disabled: True
+        write_tab: False
+        multiline: False
+        padding_y: self.height / 2 - (self.line_height / 2), 0
+        hint_text: "Email address"
+        on_text_validate: root.email_validation(self)
+        size_hint: 1, 0.6
+    ToggleButton:
+        size_hint: 1, 0.6
+        on_state: root.unlock(self, phone)
+        text: "I want to be updated via SMS"
+    TextInput:
+        id: phone
+        disabled: True
+        write_tab: False
+        multiline: False
+        padding_y: self.height / 2 - (self.line_height / 2), 0
+        input_filter: "int"
+        hint_text: "Phone number"
+        on_text_validate: root.phone_validation(self)
+        size_hint: 1, 0.6
+    Button:
+        size_hint: 1, 0.8
+        text: "Add flight"
+        on_release: root.add_flight(self, from_widget, to_widget, days, price, email, phone)
+    GridLayout:
+        spacing: "5dp"
+        size_hint: 1, 0.8
+        cols: 2
+        Button:
+            text: "Show wishlist"
+        Button:
+            text: "Clear wishlist"
