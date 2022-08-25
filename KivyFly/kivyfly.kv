@@ -37,7 +37,8 @@ App:
         spacing: "5dp"
         Button:
             size_hint: 0.7, 1
-            text: "My location"
+            text: "Switch locations"
+            on_release: root.switch_locations(from_widget, to_widget)
         TextInput:
             id: from_widget
             focus: True
@@ -51,6 +52,7 @@ App:
         Button:
             size_hint: 0.7, 1
             text: "Random location"
+            on_release: root.random_location(to_widget)
         TextInput:
             id: to_widget
             write_tab: False

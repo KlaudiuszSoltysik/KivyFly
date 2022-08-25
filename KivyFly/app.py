@@ -4,6 +4,13 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
 from kivy.core.window import Window
 
+import requests
+import random
+from sheetsu import SheetsuClient
+
+AIRPORTS_ENDPOINT = "https://sheetsu.com/apis/v1.0su/f93d3b2189ac"
+WISHLIST_ENDPOINT = "https://sheetsu.com/apis/v1.0su/80af76dd4bea"
+
 class KivyFlyApp(App):
     pass
 
@@ -17,12 +24,36 @@ class PopupContent(BoxLayout):
 
 
 class Panel(BoxLayout):
-    def unlock(self, button, widget):        
+    airports_data = {}
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        
+        data = requests.get(url = AIRPORTS_ENDPOINT).json()
+
+        for item in data:
+            name = item['city'].strip()
+            self.airports_data[name] = item
+            
+        print(self.airports_data)
+
+    
+    def switch_locations(self, from_input, to_input):
+        tmp = from_input.text
+        from_input.text = to_input.text
+        to_input.text = tmp
+        
+        
+    def random_location(self, text_input):
+        text_input.text = random.choice(list(self.airports_data))
+    
+
+    def unlock(self, button, text_input):        
         if button.state == "normal":
-            widget.disabled = True
-            widget.text = ""
+            text_input.disabled = True
+            text_input.text = ""
         else:
-            widget.disabled = False
+            text_input.disabled = False
             
     
     def email_validation(self, email):
@@ -52,6 +83,13 @@ class Panel(BoxLayout):
         self.email_validation(email)
         self.phone_validation(phone)
         
+        if (from_city.text.capitalize()).strip() == (to_city.text.capitalize()).strip():
+            button.text = "Invalid value - refill and try again"
+            button.color = (1, 0, 0)
+            from_city.foreground_color = (1, 0, 0)
+            to_city.foreground_color = (1, 0, 0)
+            return False
+        
         if email.text == "" and phone.text == "" or days.text == "":
             button.text = "Missing value - refill and try again"
             button.color = (1, 0, 0)
@@ -68,6 +106,35 @@ class Panel(BoxLayout):
             button.color = (1, 0, 0)
             price.foreground_color = (1, 0, 0)
             return False
+        
+        if (from_city.text.capitalize()).strip() not in self.airports_data:
+            button.text = "Invalid value - refill and try again"
+            button.color = (1, 0, 0)
+            from_city.foreground_color = (1, 0, 0)
+            return False
+        
+        if (to_city.text.capitalize()).strip() not in self.airports_data:
+            button.text = "Invalid value - refill and try again"
+            button.color = (1, 0, 0)
+            to_city.foreground_color = (1, 0, 0)
+            return False
+        
+        record = {"from": (from_city.text.capitalize()).strip(),
+                  "to": (to_city.text.capitalize()).strip(),
+                  "days": str(days.text), 
+                  "price": str(price.text),
+                  "email": email.text,
+                  "phone": phone.text}
+        
+        client = SheetsuClient(WISHLIST_ENDPOINT)
+        client.create_one(record)
+        
+        from_city.text = ""
+        to_city.text = ""
+        days.text = ""
+        price.text = ""
+        email.text = ""
+        phone.text = ""
         
         content = Button(text = "OK")
         popup = Popup(title = "Flight added",
