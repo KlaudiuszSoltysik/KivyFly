@@ -6,48 +6,55 @@ from kivy.core.window import Window
 
 import requests
 import random
-from sheetsu import SheetsuClient
+import webbrowser
 
-AIRPORTS_ENDPOINT = "https://sheetsu.com/apis/v1.0su/f93d3b2189ac"
-WISHLIST_ENDPOINT = "https://sheetsu.com/apis/v1.0su/80af76dd4bea"
+#ENVIORMENTAL VARIABLES NEEDED TO CONNECT WITH SPREADSHEET API'S 
+AIRPORTS_ENDPOINT = "https://sheetdb.io/api/v1/86e83n2e9x2ti"
+WISHLIST_ENDPOINT = "https://sheetdb.io/api/v1/a2o9bu5hqn0hf"
+
 
 class KivyFlyApp(App):
     pass
 
-        
+
+#DEFINING HEADER OF THE WINDOW   
 class Header(BoxLayout):
     pass
 
 
+#NOTIFICATION POPUP
 class PopupContent(BoxLayout):
     pass
 
 
+#CONTENT OF AN APP
 class Panel(BoxLayout):
     airports_data = {}
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         
+        #GETTING AIRPORTS DATA
         data = requests.get(url = AIRPORTS_ENDPOINT).json()
 
         for item in data:
-            name = item['city'].strip()
+            name = item["city"].strip()
             self.airports_data[name] = item
-            
-        print(self.airports_data)
 
     
+    #SWITCHING FROM AND TO LOCATIONS WITH EACH OTHER
     def switch_locations(self, from_input, to_input):
         tmp = from_input.text
         from_input.text = to_input.text
         to_input.text = tmp
         
-        
+    
+    #RANDOMIZING DESTINATION 
     def random_location(self, text_input):
         text_input.text = random.choice(list(self.airports_data))
     
 
+    #PROCESSING USER'S CONSENT
     def unlock(self, button, text_input):        
         if button.state == "normal":
             text_input.disabled = True
@@ -56,6 +63,7 @@ class Panel(BoxLayout):
             text_input.disabled = False
             
     
+    #CHECKING IF EMAIL IS VALID
     def email_validation(self, email):
         if not "@" in email.text:
             email.foreground_color = (1, 0, 0)
@@ -63,14 +71,17 @@ class Panel(BoxLayout):
             email.foreground_color = (0, 0, 0)
             
     
+    #CHCKING IF PHONE NUMBER IS VALID
     def phone_validation(self, phone):
         if  len(phone.text) != 9:
             phone.foreground_color = (1, 0, 0)
         else:
             phone.foreground_color = (0, 0, 0)
             
-            
+    
+    #CHECKING IF USER'S FLIGHT IS CORRECT ADDING FLIGHT TO WISHLIST      
     def add_flight(self, button, from_city, to_city, days, price, email, phone):
+        #RESETING BUTTONS AND TEXT BOXES
         button.text = "Add flight"
         button.color = (1, 1, 1)
         from_city.foreground_color = (0, 0, 0)
@@ -83,6 +94,7 @@ class Panel(BoxLayout):
         self.email_validation(email)
         self.phone_validation(phone)
         
+        #CHECKING IF USER'S FLIGHT IS CORRECT
         if (from_city.text.capitalize()).strip() == (to_city.text.capitalize()).strip():
             button.text = "Invalid value - refill and try again"
             button.color = (1, 0, 0)
@@ -112,13 +124,14 @@ class Panel(BoxLayout):
             button.color = (1, 0, 0)
             from_city.foreground_color = (1, 0, 0)
             return False
-        
+
         if (to_city.text.capitalize()).strip() not in self.airports_data:
             button.text = "Invalid value - refill and try again"
             button.color = (1, 0, 0)
             to_city.foreground_color = (1, 0, 0)
             return False
         
+        #ADDING FLIGHT TO THE WISHLIST
         record = {"from": (from_city.text.capitalize()).strip(),
                   "to": (to_city.text.capitalize()).strip(),
                   "days": str(days.text), 
@@ -126,16 +139,15 @@ class Panel(BoxLayout):
                   "email": email.text,
                   "phone": phone.text}
         
-        client = SheetsuClient(WISHLIST_ENDPOINT)
-        client.create_one(record)
+        requests.post(url = WISHLIST_ENDPOINT, json = record)
         
+        #RESETING TEXTBOXES
         from_city.text = ""
         to_city.text = ""
         days.text = ""
         price.text = ""
-        email.text = ""
-        phone.text = ""
         
+        #SUCCESS POPUP
         content = Button(text = "OK")
         popup = Popup(title = "Flight added",
                       content = content, 
@@ -144,6 +156,24 @@ class Panel(BoxLayout):
         popup.open()
     
     
+    #OPENING SPREADSHEET WITH USER WISHLIST
+    def show_wishlist(self):
+        webbrowser.open("https://docs.google.com/spreadsheets/d/1K9qop8wJkf-SEo4aPtqC2krZm9AyBaSa9MJPODCbAgc/edit#gid=107795421")
+    
+    
+    #CLEARING WISHLIST
+    def clear_wishlist(self):
+        response = requests.delete(url = WISHLIST_ENDPOINT + "/all")
+        
+        content = Button(text = "OK")
+        popup = Popup(title = "WISHLIST CLEARED",
+                      content = content, 
+                      auto_dismiss = False)
+        content.bind(on_press = popup.dismiss)
+        popup.open()
+    
+
+#DEFINING WINDOW
 class App(BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -159,5 +189,6 @@ class App(BoxLayout):
         self.add_widget(self.header)
         self.add_widget(self.panel)
 
-    
+
+#CREATING WINDOW AND RUNNING THE PROGRAM  
 KivyFlyApp().run()
