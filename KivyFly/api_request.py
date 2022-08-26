@@ -1,18 +1,28 @@
 import smtplib
 import requests
 import datetime
+from dotenv import load_dotenv
+import os
+from twilio.rest import Client
+
+load_dotenv()
 
 #ENVIORMENTAL VARIABLES NEEDED TO CONNECT WITH API WITH FLIGHTS DATA
-TICKETS_ENDPOINT = "https://tequila-api.kiwi.com/v2/search"
-TICKETS_API_KEY = "Fpvtru_uLRs-3oqwAgaGTf9XdilUCyPD"
+TICKETS_ENDPOINT = os.getenv("TICKETS_ENDPOINT")
+TICKETS_API_KEY = os.getenv("TICKETS_API_KEY")
 
 #ENVIORMENTAL VARIABLES NEEDED TO CONNECT WITH SPREADSHEET API'S 
-AIRPORTS_ENDPOINT = "https://sheetdb.io/api/v1/86e83n2e9x2ti"
-WISHLIST_ENDPOINT = "https://sheetdb.io/api/v1/a2o9bu5hqn0hf"
+AIRPORTS_ENDPOINT = os.getenv("AIRPORTS_ENDPOINT")
+WISHLIST_ENDPOINT = os.getenv("WISHLIST_ENDPOINT")
 
-#ENVIORMENTAL VARIABLES - EMAIL AND PASSWORD WCHIH SENDS YOU AN EMAIL
-EMAIL = "czekolada668@gmail.com"
-PASSWORD = "Krajobraz1"
+#ENVIORMENTAL VARIABLES - EMAIL AND PASSWORD TO AN EMAIL ACCOUNT
+EMAIL = os.getenv("EMAIL")
+PASSWORD = os.getenv("PASSWORD")
+
+#ENVIORMENTAL VARIABLES - FOR SMS SENDING
+SID = os.getenv("SID")
+TOKEN = os.getenv("TOKEN")
+NUMBER = os.getenv("NUMBER")
 
 #API KEY REQUARIED TO DOWNLOAD FLIGHTS DATA
 api_header = {
@@ -52,15 +62,34 @@ for row in data:
     #REQUEST TO A FLIGHTS API
     flights_data = requests.get(url = TICKETS_ENDPOINT, headers = api_header, params = flight_params).json()
     
-    #SENDING AN EMAIL NOTIFICATION
-    with smtplib.SMTP("smtp.gmail.com") as connection :
-        connection.starttls()
-        connection.login (EMAIL, PASSWORD)
-        connection.sendmail(from_addr = EMAIL,
-                            to_addrs = row["email"],
-                            msg = f"Subject: We found an interesting flight you may be interested in 🥳\n\nFly from {flights_data['data'][0]['cityFrom']}-{flights_data['data'][0]['cityCodeFrom']} to {flights_data['data'][0]['cityTo']}-{flights_data['data'][0]['cityCodeTo']}.\n\nDetails:\nUTC departue: {flights_data['data'][0]['utc_departure']}\nNights in destination: {flights_data['data'][0]['nightsInDest']}\nYou can book flight at: {flights_data['data'][0]['deep_link']}")
-
-        print(f"Subject: We found an interesting flight you may be interested in 🥳\n\nFly from {flights_data['data'][0]['cityFrom']}-{flights_data['data'][0]['cityCodeFrom']} to {flights_data['data'][0]['cityTo']}-{flights_data['data'][0]['cityCodeTo']}.\n\nDetails:\nUTC departue: {flights_data['data'][0]['utc_departure']}\nNights in destination: {flights_data['data'][0]['nightsInDest']}\nYou can book flight at: {flights_data['data'][0]['deep_link']}"))
-    #SENDING A SMS NOTIFICATION
+    #MESSAGE BODY
+    to_send = f"We found an interesting flight you may be interested in 🥳\n\nFly from {flights_data['data'][0]['cityFrom']}-{flights_data['data'][0]['cityCodeFrom']} to {flights_data['data'][0]['cityTo']}-{flights_data['data'][0]['cityCodeTo']}.\n\nDetails:\nUTC departue: {flights_data['data'][0]['utc_departure']}\nNights in destination: {flights_data['data'][0]['nightsInDest']}\nYou can book flight at: {flights_data['data'][0]['deep_link']}"
+    print(to_send)
     
-print("sent")
+    #SENDING AN EMAIL NOTIFICATION
+    if row["email"] != "":
+        try:
+            with smtplib.SMTP("smtp.gmail.com") as connection :
+                connection.starttls()
+                connection.login (EMAIL, PASSWORD)
+                connection.sendmail(from_addr = EMAIL,
+                                    to_addrs = EMAIL,
+                                    msg = to_send)
+            print("Email sent")
+        except:
+            print("Email error")
+        finally:
+            pass
+
+    #SENDING A SMS NOTIFICATION
+    if row["phone"] != "":
+        try:
+            client = Client(SID, TOKEN)
+            message = client.messages.create(body = to_send, 
+                                            from_ = NUMBER, 
+                                            to = "+48" + row["phone"])
+            print("SMS sent")
+        except:
+            print("SMS error")
+        finally:
+            pass

@@ -7,10 +7,14 @@ from kivy.core.window import Window
 import requests
 import random
 import webbrowser
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 #ENVIORMENTAL VARIABLES NEEDED TO CONNECT WITH SPREADSHEET API'S 
-AIRPORTS_ENDPOINT = "https://sheetdb.io/api/v1/86e83n2e9x2ti"
-WISHLIST_ENDPOINT = "https://sheetdb.io/api/v1/a2o9bu5hqn0hf"
+AIRPORTS_ENDPOINT = os.getenv("AIRPORTS_ENDPOINT")
+WISHLIST_ENDPOINT = os.getenv("WISHLIST_ENDPOINT")
 
 
 class KivyFlyApp(App):
