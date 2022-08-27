@@ -150,6 +150,14 @@ class Panel(BoxLayout):
         to_city.text = ""
         days.text = ""
         price.text = ""
+        button.text = "Add flight"
+        button.color = (1, 1, 1)
+        from_city.foreground_color = (0, 0, 0)
+        to_city.foreground_color = (0, 0, 0)
+        days.foreground_color = (0, 0, 0)
+        price.foreground_color = (0, 0, 0)
+        email.foreground_color = (0, 0, 0)
+        phone.foreground_color = (0, 0, 0)
         
         #SUCCESS POPUP
         content = Button(text = "OK")

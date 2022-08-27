@@ -62,34 +62,36 @@ for row in data:
     #REQUEST TO A FLIGHTS API
     flights_data = requests.get(url = TICKETS_ENDPOINT, headers = api_header, params = flight_params).json()
     
-    #MESSAGE BODY
-    to_send = f"We found an interesting flight you may be interested in 🥳\n\nFly from {flights_data['data'][0]['cityFrom']}-{flights_data['data'][0]['cityCodeFrom']} to {flights_data['data'][0]['cityTo']}-{flights_data['data'][0]['cityCodeTo']}.\n\nDetails:\nUTC departue: {flights_data['data'][0]['utc_departure']}\nNights in destination: {flights_data['data'][0]['nightsInDest']}\nYou can book flight at: {flights_data['data'][0]['deep_link']}"
-    print(to_send)
-    
-    #SENDING AN EMAIL NOTIFICATION
-    if row["email"] != "":
-        try:
-            with smtplib.SMTP("smtp.gmail.com") as connection :
-                connection.starttls()
-                connection.login (EMAIL, PASSWORD)
-                connection.sendmail(from_addr = EMAIL,
-                                    to_addrs = EMAIL,
-                                    msg = to_send)
-            print("Email sent")
-        except:
-            print("Email error")
-        finally:
-            pass
+    for flight in flights_data['data']:
+        #MESSAGE BODY
+        to_send = f"We found a flight you may be interested in 🥳\n\nFly from {flight['cityFrom']}-{flight['cityCodeFrom']} to {flight['cityTo']}-{flight['cityCodeTo']}.\n\nDetails:\nUTC departue: {flight['utc_departure']}\nNights in destination: {flight['nightsInDest']}\nYou can book flight at: {flight['deep_link']}"
 
-    #SENDING A SMS NOTIFICATION
-    if row["phone"] != "":
-        try:
-            client = Client(SID, TOKEN)
-            message = client.messages.create(body = to_send, 
-                                            from_ = NUMBER, 
-                                            to = "+48" + row["phone"])
-            print("SMS sent")
-        except:
-            print("SMS error")
-        finally:
-            pass
+        print(to_send)
+        
+        #SENDING AN EMAIL NOTIFICATION
+        if row["email"] != "":
+            try:
+                with smtplib.SMTP("smtp.gmail.com") as connection :
+                    connection.starttls()
+                    connection.login (EMAIL, PASSWORD)
+                    connection.sendmail(from_addr = EMAIL,
+                                        to_addrs = EMAIL,
+                                        msg = to_send)
+                print("Email sent")
+            except:
+                print("Email error")
+            finally:
+                pass
+
+        #SENDING A SMS NOTIFICATION
+        if row["phone"] != "":
+            try:
+                client = Client(SID, TOKEN)
+                message = client.messages.create(body = to_send, 
+                                                from_ = NUMBER, 
+                                                to = "+48" + row["phone"])
+                print("SMS sent")
+            except:
+                print("SMS error")
+            finally:
+                pass
