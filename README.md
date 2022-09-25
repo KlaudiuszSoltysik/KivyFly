@@ -1,5 +1,5 @@
 # KivyFly
-## Video demonstration:
+## Video demonstration where I'm describing project (sound on):
 https://www.youtube.com/watch?v=sMXSbdRfbbc
 ## Features:
 User wishlist is uploaded or deleted from Google spreadsheet straight from the code using request library and API. Internet connection is obligatory.
