@@ -1,8 +1,7 @@
-Video demonstration:
+# KivyFly
+## Video demonstration:
 https://www.youtube.com/watch?v=sMXSbdRfbbc
-
-I invite you to watch the video above.
-
+## Features:
 User wishlist is uploaded or deleted from Google spreadsheet straight from the code using request library and API. Internet connection is obligatory.
 I used an API algorithm. It checks the price of flights matching your preferences in the next 180 days using an API to download data.
 You can set up a cloud to run api_request.py automatically every day.
